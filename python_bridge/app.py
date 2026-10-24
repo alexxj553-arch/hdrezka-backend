@@ -208,7 +208,14 @@ def get_mirrors():
 @app.post("/mirrors/check")
 def check_mirrors():
     checked = _check_all()
+    global _active_mirror
     with _LOCK:
+        by_url = {item["url"]: item for item in checked}
+        current = by_url.get(_active_mirror, {})
+        if current.get("available") is False:
+            fallback = next((item["url"] for item in checked if item.get("available")), None)
+            if fallback:
+                _active_mirror = fallback
         active = _active_mirror
     return {"active": active, "count": len(checked), "mirrors": [
         {**item, "active": item["url"] == active} for item in checked
