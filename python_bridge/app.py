@@ -58,7 +58,7 @@ def _normalise_mirror(value: str) -> str:
 
 def _initialise_mirrors() -> None:
     global _active_mirror
-    candidates = _configured + [f"https://{host}" for host in sorted(_ALLOWED_HOSTS)]
+    candidates = _configured + [f"https://{host.strip()}" for host in _DEFAULT_MIRRORS.split(",") if host.strip() in _ALLOWED_HOSTS] + [f"https://{host}" for host in sorted(_ALLOWED_HOSTS)]
     seen: set[str] = set()
     for candidate in candidates:
         try:
