@@ -121,9 +121,15 @@ def item(url: str):
 @app.get("/translations")
 def translations(url: str):
     target = validate_url(url)
-    result = item(url=target)
-    raw = result.get("details")
-    player = getattr(raw, "player", None) if raw is not None else None
+    client = library()
+    try:
+        media = call_method(client, ("get",), url=target)
+    except HTTPException as first_error:
+        try:
+            media = call_method(client, ("get",), target)
+        except HTTPException:
+            raise first_error
+    player = getattr(media, "player", None)
     if player is None:
         return {"url": target, "translations": [], "supported": False, "note": "Translator metadata is not exposed by the installed library version."}
     options = getattr(player, "translators_dict", None)
